@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "635268815529",
+    "firebase_url": "https://livrocaixaka.firebaseio.com",
+    "project_id": "livrocaixaka",
+    "storage_bucket": "livrocaixaka.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:635268815529:android:4198a26c451bc3b1c2a7b8",
+        "android_client_info": {
+          "package_name": "com.deliciasKa.livroCaixaKa"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "635268815529-6kuchrh75cmf1d5nnq2erhd50k92p4jb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA-v6edIf3HBnAtojsK8dgjrDAetBqwQJc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "635268815529-6kuchrh75cmf1d5nnq2erhd50k92p4jb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
