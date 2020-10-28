@@ -1,8 +1,10 @@
-import React,{useState} from 'react'
+import React, { useState } from 'react'
 import { Text, View, ScrollView, SafeAreaView, StyleSheet, FlatList } from 'react-native'
 import { Avatar, Button, Card, Title, Paragraph, Appbar, List } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native'
 import DateTimePicker from '@react-native-community/datetimepicker';
+import config from '../../components/Firebase';
+import * as firebase from 'firebase';
 
 const DATA = [
     {
@@ -54,6 +56,27 @@ const Item = ({ title }) => (
 );
 export default () => {
 
+    if (!firebase.apps.length) {
+        try {
+            firebase.initializeApp(config)
+        } catch (err) {
+            console.log(err)
+        }
+    }
+    const db = firebase.database().ref();
+    const tabelaSalas = db.child('Salas');
+
+    let todasSalas = [];
+    
+    tabelaSalas.on("child_added", snap => {
+        let f = snap.val();
+        console.log(f)
+        f.key = snap.key;
+        todasSalas.push(f);
+        console.log(todasSalas);
+    });
+
+
     const navigation = useNavigation();
 
     const LeftContent = props => <Avatar.Icon {...props} icon="folder" />
@@ -98,58 +121,56 @@ export default () => {
                 <Appbar.Content title="Reserva" subtitle="de salas" />
             </Appbar.Header>
             <ScrollView>
-                <View style={{height:760,}}>
-                <View>
-                    <Card>
-                        <Card.Title title="José Augusto" subtitle="Professor" left={LeftContent} />
-                        <Card.Content>
-                            <Title>José Augusto</Title>
-
-                            <Text style={{ flex: 1, flexDirection: 'row', textAlign: 'left' }}>Período: Matutino</Text>
-                            <Text style={{ flex: 1, flexDirection: 'row', textAlign: 'left' }}>Curso: Análise e desenvolvimento de sistemas</Text>
-                            <Text style={{ flex: 1, flexDirection: 'row', textAlign: 'left' }}>Disciplina: Algorítimo</Text>
-
-                        </Card.Content>
-
-                    </Card>
-                    <View style={{ height: 300, marginTop: 15 }}>
-                        <Card>
-                            <ScrollView>
-                                <View>
-                                    <FlatList
-                                        data={DATA}
-
-
-                                        renderItem={renderItem}
-                                        keyExtractor={item => item.id}
-                                    />
-                                </View>
-                            </ScrollView>
-                        </Card>
-
-                    </View>
+                <View style={{ height: 760, }}>
                     <View>
-                        <View>
-                            <Button style={{margin:15}} onPress={showDatepicker} mode="contained" title="Show date picker!">DATA</Button>
+                        <Card>
+                            <Card.Title title="José Augusto" subtitle="Professor" left={LeftContent} />
+                            <Card.Content>
+                                <Title>José Augusto</Title>
+
+                                <Text style={{ flex: 1, flexDirection: 'row', textAlign: 'left' }}>Período: Matutino</Text>
+                                <Text style={{ flex: 1, flexDirection: 'row', textAlign: 'left' }}>Curso: Análise e desenvolvimento de sistemas</Text>
+                                <Text style={{ flex: 1, flexDirection: 'row', textAlign: 'left' }}>Disciplina: Algorítimo</Text>
+
+                            </Card.Content>
+
+                        </Card>
+                        <View style={{ height: 300, marginTop: 15 }}>
+                            <Card>
+                                <ScrollView>
+                                    <View>
+                                        <FlatList
+                                            data={DATA}
+                                            renderItem={renderItem}
+                                            keyExtractor={item => item.id}
+                                        />
+                                    </View>
+                                </ScrollView>
+                            </Card>
+
                         </View>
                         <View>
-                            <Button style={{margin:15}} onPress={showTimepicker} mode="contained" title="Show time picker!">HORA</Button>
-                        </View>
-                        {show && (
-                            <DateTimePicker
-                                testID="dateTimePicker"
-                                value={date}
-                                mode={mode}
-                                is24Hour={true}
-                                display="default"
-                                onChange={onChange}
-                            />
-                        )}
-                        <View>
-                            <Button style={{margin:15}} onPress={handleTimeLine} mode="contained" title="Show time picker!">Reservar</Button>
+                            <View>
+                                <Button style={{ margin: 15 }} onPress={showDatepicker} mode="contained" title="Show date picker!">DATA</Button>
+                            </View>
+                            <View>
+                                <Button style={{ margin: 15 }} onPress={showTimepicker} mode="contained" title="Show time picker!">HORA</Button>
+                            </View>
+                            {show && (
+                                <DateTimePicker
+                                    testID="dateTimePicker"
+                                    value={date}
+                                    mode={mode}
+                                    is24Hour={true}
+                                    display="default"
+                                    onChange={onChange}
+                                />
+                            )}
+                            <View>
+                                <Button style={{ margin: 15 }} onPress={handleTimeLine} mode="contained" title="Show time picker!">Reservar</Button>
+                            </View>
                         </View>
                     </View>
-                </View>
                 </View>
             </ScrollView>
         </SafeAreaView>
