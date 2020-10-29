@@ -143,7 +143,7 @@ export default () => {
                                             data={DATA}
                                             renderItem={renderItem}
                                             keyExtractor={item => item.id}
-                                        />
+                                        />]
                                     </View>
                                 </ScrollView>
                             </Card>
