@@ -1,14 +1,14 @@
 {
     "expo": {
-        "name": "livroCaixa",
-        "slug": "livroCaixa",
+        "name": "reservationApp",
+        "slug": "reservationApp",
         "version": "1.0.0",
         "orientation": "portrait",
         "icon": "./assets/icon.png",
         "splash": {
             "image": "./assets/splash.png",
             "resizeMode": "contain",
-            "backgroundColor": "#330818"
+            "backgroundColor": "#3D2554"
         },
         "updates": {
             "fallbackToCacheTimeout": 0
