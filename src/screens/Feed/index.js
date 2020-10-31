@@ -74,6 +74,7 @@ export default () => {
             right: 0,
             bottom: 0,
             backgroundColor: '#3D2554',
+            zIndex:15,
         },
     })
 
@@ -87,14 +88,8 @@ export default () => {
     return (
 
         <SafeAreaView>
-            <FAB
-                style={styles.fab}
-                big
-                icon="plus"
-                onPress={() => handleReservationScreen()}
-                color="#fff"
-            />
-            <View style={{ height: 365, marginTop: 15 }}>
+           
+            <View style={{ height: 580, marginTop: 15 }}>
                 
                 <Card>
                     <ScrollView>
@@ -108,7 +103,14 @@ export default () => {
                         </View>
                     </ScrollView>
                 </Card>
-            </View>
+            </View> 
+            <FAB
+                style={styles.fab}
+                big
+                icon="plus"
+                onPress={() => handleReservationScreen()}
+                color="#fff"
+            />
         </SafeAreaView>
 
 

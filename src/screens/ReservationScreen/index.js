@@ -47,6 +47,15 @@ const styles = StyleSheet.create({
         marginHorizontal: 16,
         borderRadius: 5,
     },
+    button: {
+        backgroundColor: '#3D2554',
+        padding: 10,
+        marginVertical: 8,
+        marginHorizontal: 16,
+        borderRadius: 2,
+        color: '#fff',
+        fontWeight: 'bold',
+    },
     title: {
         fontSize: 12,
         textAlign: 'center',
@@ -55,6 +64,11 @@ const styles = StyleSheet.create({
 });
 
 export default () => {
+
+    //constante que vai pegar a sala e o nome que foi selecionado
+    const [selectedSalaNome, setSelectedSalaNome] = useState('');
+    const [selectedSalaKey, setSelectedSalaKey] = useState('');
+    //----//    
 
     //TouchableOpacity do flatlist
     const [selectedId, setSelectedId] = useState(null);
@@ -79,7 +93,11 @@ export default () => {
                 item={item}
                 onPress={() => {
                     setSelectedId(item.key)
+                    setSelectedSalaNome(item.nome);
+                    setSelectedSalaKey(item.key);
+                    console.log(date);
                     showModal();
+
                 }}
                 style={{ backgroundColor }}
             />
@@ -97,11 +115,81 @@ export default () => {
     const [mode, setMode] = useState('date');
     const [show, setShow] = useState(false);
 
+    const [horaInicial, setHoraInicial] = useState('');
+    const [horaTermino, setHoraTermino] = useState('');
+    const [dataReserva, setDataReserva] = useState('');
+
+    const [switchModeData, setSwitchModeData] = useState(6);
+    const [verificaDH, setVerificaDH] = useState(false);
+
+
     const onChange = (event, selectedDate) => {
         const currentDate = selectedDate || date;
         setShow(Platform.OS === 'ios');
         setDate(currentDate);
+        defineDates(selectedDate);
     };
+    const defineDates = (selectedDate) => {
+        if (switchModeData == 0) {
+            let dia = selectedDate.getDate();
+            let mes = (selectedDate.getMonth()) + 1; //+1 pois no getMonth Janeiro começa com zero.
+            let ano = selectedDate.getFullYear();
+            let dataSlice = dia + "/" + mes + "/" + ano;
+            console.log(dataSlice);
+            setDataReserva(dataSlice);
+        }
+        if (switchModeData == 1) {
+            let hora = selectedDate.getHours();
+            let minutos = selectedDate.getMinutes();
+            let horaMinutosInicial = hora + ":" + minutos;
+            console.log(horaMinutosInicial);
+            setHoraInicial(horaMinutosInicial)
+        }
+        if (switchModeData == 2) {
+            let hora = selectedDate.getHours();
+            let minutos = selectedDate.getMinutes();
+            let horaMinutosTermino = hora + ":" + minutos;
+            console.log(horaMinutosTermino);
+            setHoraTermino(horaMinutosTermino);
+        }
+    }
+
+    const finalizarReserva = () => {
+        if (dataReserva != '' && horaInicial != '' && horaTermino != '') {
+            console.log("--------reserva concluída-------")
+            console.log(selectedSalaKey);
+            console.log(selectedSalaNome);
+            console.log(dataReserva);
+            console.log(horaInicial);
+            console.log(horaTermino);
+            console.log("---------------------------------")
+
+            const db2 = firebase.database().ref();
+            const salaReservada = db2.child("Salas/"+selectedSalaKey);
+            var teste = [];
+            console.log(salaReservada);
+
+            salaReservada.update({
+                ocupado: "sim",
+                data: dataReserva,
+                horaInicio: horaInicial,
+                horaTermino: horaTermino,
+            });
+
+
+            salaReservada.on("child_changed", snap => {
+                let f = snap.val();
+                console.log(f)
+                f.key = snap.key;
+                teste.push(f);
+                console.log(teste);
+            });
+
+            handleTimeLine();
+        } else {
+            alert("É necessário informar todos os valores.");
+        }
+    }
 
     const showMode = (currentMode) => {
         setShow(true);
@@ -115,6 +203,8 @@ export default () => {
     const showTimepicker = () => {
         showMode('time');
     };
+
+
 
     return (
 
@@ -145,7 +235,47 @@ export default () => {
 
                             <Portal>
                                 <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={containerStyle}>
-                                    <Text>Example Modal.  Click outside this area to dismiss.</Text>
+                                    <View>
+                                        <View>
+                                            <Text>{selectedSalaNome}</Text>
+                                            <Text>{selectedSalaKey}</Text>
+                                        </View>
+
+                                        <View>
+                                            <TouchableOpacity onPress={() => { setSwitchModeData(0); showDatepicker(); }} style={styles.button}>
+                                                <Text style={styles.title}>Data</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                        <View>
+                                            <TouchableOpacity onPress={() => { setSwitchModeData(1); showTimepicker(); }} style={styles.button}>
+                                                <Text style={styles.title}>Hora de início</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                        <View>
+
+                                            <TouchableOpacity onPress={() => { setSwitchModeData(2); showTimepicker(); }} style={styles.button}>
+                                                <Text style={styles.title}>Hora de termino</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                        <View>
+                                            <Text>A {selectedSalaNome} foi reservada para data {dataReserva} das {horaInicial} horas até {horaTermino}</Text>
+                                        </View>
+                                        <View>
+                                            <TouchableOpacity onPress={() => { finalizarReserva() }} style={styles.button}>
+                                                <Text style={styles.title}>Finalizar reserva</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                        {show && (
+                                            <DateTimePicker
+                                                testID="dateTimePicker"
+                                                value={date}
+                                                mode={mode}
+                                                dateFormat="dayofweek day month"
+                                                display="default"
+                                                onChange={onChange}
+                                            />
+                                        )}
+                                    </View>
                                 </Modal>
                             </Portal>
                             <View style={{ height: 365, marginTop: 15 }}>
@@ -168,7 +298,7 @@ export default () => {
             </ScrollView>
 
 
-        </SafeAreaView>
+        </SafeAreaView >
 
 
     )
