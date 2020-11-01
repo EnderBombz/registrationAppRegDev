@@ -17,6 +17,7 @@ const db = firebase.database().ref();
 const tabelaSalas = db.child('Salas');
 
 var todasSalas = [];
+var todasSalasReservadas = [];
 
 tabelaSalas.on("child_added", snap => {
     let f = snap.val();
@@ -30,6 +31,21 @@ tabelaSalas.on("child_added", snap => {
 
     console.log(todasSalas);
 });
+
+
+tabelaSalas.on("child_added", snap => {
+    let f = snap.val();
+    console.log(f)
+    f.key = snap.key;
+    if (f.ocupado == 'sim') {
+        todasSalasReservadas.push(f);
+    } else {
+
+    }
+
+    console.log(todasSalas);
+});
+
 
 
 const Item = ({ item, onPress, style }) => (
@@ -95,7 +111,6 @@ export default () => {
                     setSelectedId(item.key)
                     setSelectedSalaNome(item.nome);
                     setSelectedSalaKey(item.key);
-                    console.log(date);
                     showModal();
 
                 }}
@@ -140,14 +155,24 @@ export default () => {
         }
         if (switchModeData == 1) {
             let hora = selectedDate.getHours();
-            let minutos = selectedDate.getMinutes();
+            let minutos = selectedDate.getMinutes() * 10;
+            (minutos >= 59 ? minutos = minutos / 10 : minutos);
+            if(minutos == 0){
+                minutos = "00";
+            }
+
             let horaMinutosInicial = hora + ":" + minutos;
             console.log(horaMinutosInicial);
             setHoraInicial(horaMinutosInicial)
         }
         if (switchModeData == 2) {
             let hora = selectedDate.getHours();
-            let minutos = selectedDate.getMinutes();
+            let minutos = selectedDate.getMinutes() * 10;
+            (minutos >= 59 ? minutos = minutos / 10 : minutos);
+            if(minutos == 0){
+                minutos = "00";
+            }
+
             let horaMinutosTermino = hora + ":" + minutos;
             console.log(horaMinutosTermino);
             setHoraTermino(horaMinutosTermino);
@@ -156,36 +181,39 @@ export default () => {
 
     const finalizarReserva = () => {
         if (dataReserva != '' && horaInicial != '' && horaTermino != '') {
-            console.log("--------reserva concluída-------")
-            console.log(selectedSalaKey);
-            console.log(selectedSalaNome);
-            console.log(dataReserva);
-            console.log(horaInicial);
-            console.log(horaTermino);
-            console.log("---------------------------------")
 
-            const db2 = firebase.database().ref();
-            const salaReservada = db2.child("Salas/"+selectedSalaKey);
-            var teste = [];
-            console.log(salaReservada);
+                console.log("--------reserva concluída-------")
+                console.log(selectedSalaKey);
+                console.log(selectedSalaNome);
+                console.log(dataReserva);
+                console.log(horaInicial);
+                console.log(horaTermino);
+                console.log("---------------------------------")
 
-            salaReservada.update({
-                ocupado: "sim",
-                data: dataReserva,
-                horaInicio: horaInicial,
-                horaTermino: horaTermino,
-            });
+                const db2 = firebase.database().ref();
+                const salaReservada = db2.child("Salas/" + selectedSalaKey);
+                var teste = [];
+                console.log(salaReservada);
+
+                salaReservada.update({
+                    ocupado: "sim",
+                    data: dataReserva,
+                    horaInicio: horaInicial,
+                    horaTermino: horaTermino,
+                });
 
 
-            salaReservada.on("child_changed", snap => {
-                let f = snap.val();
-                console.log(f)
-                f.key = snap.key;
-                teste.push(f);
-                console.log(teste);
-            });
+                salaReservada.on("child_changed", snap => {
+                    let f = snap.val();
+                    console.log(f)
+                    f.key = snap.key;
+                    teste.push(f);
+                    console.log(teste);
+                });
 
-            handleTimeLine();
+                handleTimeLine();
+                alert("Por favor, atualize a lista.")
+            
         } else {
             alert("É necessário informar todos os valores.");
         }
