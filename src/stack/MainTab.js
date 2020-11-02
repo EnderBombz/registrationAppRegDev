@@ -26,7 +26,7 @@ export default () => {
                         } else if (route.name === 'User') {
                             iconName = focused ? 'user' : 'user';
                         } 
-                        // You can return any component that you like here!
+                      
                         return <AntDesign name={iconName}size={24}color={color}/>;
                     },
                 })

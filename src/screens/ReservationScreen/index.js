@@ -265,8 +265,8 @@ export default () => {
                                 <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={containerStyle}>
                                     <View>
                                         <View>
-                                            <Text>{selectedSalaNome}</Text>
-                                            <Text>{selectedSalaKey}</Text>
+                                            <Text  style={{color:'#000',fontSize:20,fontWeight:'bold',marginBottom:15,}}>{selectedSalaNome}</Text>
+                                           
                                         </View>
 
                                         <View>
@@ -286,7 +286,7 @@ export default () => {
                                             </TouchableOpacity>
                                         </View>
                                         <View>
-                                            <Text>A {selectedSalaNome} foi reservada para data {dataReserva} das {horaInicial} horas até {horaTermino}</Text>
+                                            <Text style={{fontSize:15,}}>O{"(A) "}{selectedSalaNome} foi reservado{"(a)"} para data {dataReserva} das {horaInicial} horas até {horaTermino} horas</Text>
                                         </View>
                                         <View>
                                             <TouchableOpacity onPress={() => { finalizarReserva() }} style={styles.button}>

@@ -11,19 +11,17 @@ export default () => {
 
     return (
         <SafeAreaView>
-            <Appbar.Header theme={{ colors: { primary: '#3D2554', underlineColor: '#3D2554' } }}>
-                <Appbar.BackAction onPress={_goBack} />
-                <Appbar.Content title="Perfil" subtitle="do usuário" />
-                <Appbar.Action icon="magnify" onPress={_handleSearch} />
-                <Appbar.Action icon="dots-vertical" onPress={_handleMore} />
-            </Appbar.Header>
+            <View style={{marginBottom:15,}}>
+
+            </View>
             <View style={{
                 flex: 1,
                 flexDirection: 'column',
                 alignItems: 'center',
+                padding:15,
             }}>
                 <Text>
-                    Teste
+                    Usuário
             </Text>
             </View>
         </SafeAreaView>
