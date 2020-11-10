@@ -1,70 +1,15 @@
-import React, { useState } from 'react'
-import { Text, View, ScrollView, SafeAreaView, StyleSheet, FlatList, TouchableOpacity } from 'react-native'
+import React, { useContext, useState } from 'react'
+import { Text, View, SafeAreaView, StyleSheet, FlatList } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
-import config from '../../components/Firebase';
-import * as firebase from 'firebase';
-import { FAB, Avatar, Card, Title, Modal, Portal, Button, Provider } from 'react-native-paper';
-
-//Inicializa a configuração pré-definida no componente "Firebase.js"
-if (!firebase.apps.length) {
-    try {
-        firebase.initializeApp(config)
-    } catch (err) {
-        console.log(err)
-    }
-}
-//-----//
-
-//Referência a key "Salas" no firebase 
-const db = firebase.database().ref();
-const tabelaSalas = db.child('Salas');
-//-----//
-
-//Váriavel que tem propósito de armazenar o JSON para exibir no flatlist
-var todasSalasReservadas = [];
-//-----//
-
-//Estrutura do card que será exibido no "Feed" do app
-const LeftContent = props => <Avatar.Icon {...props} icon="folder" />
-const Item = ({ item, onPress }) => (
-    <View>
-        <TouchableOpacity onPress={onPress} >
-
-            <Card style={{ margin: 10, borderRadius: 5, padding: 10, }}>
-                <Card.Title title={item.reservaDe} subtitle={item.cargo} left={LeftContent} />
-                <Card.Content>
-
-                    <Title>{item.nome}</Title>
-
-                    <Text style={{ flex: 1, flexDirection: 'row', textAlign: 'left' }}>Curso: {item.curso}</Text>
-                    <Text style={{ flex: 1, flexDirection: 'row', textAlign: 'left' }}>Disciplina: {item.disciplina}</Text>
-                    <Text style={{ flex: 1, flexDirection: 'row', textAlign: 'left' }}>Data de reserva: {item.data}</Text>
-                    <Text style={{ flex: 1, flexDirection: 'row', textAlign: 'left' }}>Das {item.horaInicio} horas até {item.horaTermino} horas</Text>
-
-                </Card.Content>
-
-            </Card>
-        </TouchableOpacity>
-
-    </View>
-);
-//-----//
-
-//Inserção dos dados no Array "todasSalasReservadas" ao iniciar o app
-tabelaSalas.on("child_added", snap => {
-    let f = snap.val();
-    console.log(f)
-    f.key = snap.key;
-    if (f.ocupado == 'sim') {
-        todasSalasReservadas.push(f);
-    }
-    console.log(todasSalasReservadas);
-});
-//-----//
+import { FAB, Card, Modal, Portal, Button, Provider } from 'react-native-paper';
+import { TodasSalasContext } from '../../contexts/firebase'
+import CardItem from '../../components/CardItem'
 
 
 
-export default () => {
+const Feed = () => {
+
+    const { todasSalasReservadas, removerReserva, updateBd } = useContext(TodasSalasContext)
 
     //Hooks do modal que permite liberar uma reserva//
     const [visible1, setVisible1] = React.useState(false);
@@ -90,76 +35,21 @@ export default () => {
 
     //Função que renderiza o Card de cada sala reservada no "Feed"
     const renderItem = ({ item }) => {
-        return (
-            <Item
-                item={item}
-                onPress={() => {
-                    setSelectedSalaNome(item.nome);
-                    setSelectedSalaKey(item.key);
-                    showModal1();
-                }}
-            />
-        );
+        if (item.key) {
+            return (
+                <CardItem
+                    item={item}
+                    onPress={() => {
+                        setSelectedSalaNome(item.nome);
+                        setSelectedSalaKey(item.key);
+                        showModal1();
+                    }}
+                />
+            )
+        } else {
+            return null
+        }
     };
-    //-----//
-
-
-    //Estilos do App
-    const styles = StyleSheet.create({
-        fab: {
-            position: 'absolute',
-            margin: 16,
-            right: 0,
-            bottom: 10,
-            backgroundColor: '#3D2554',
-            zIndex: 15,
-        },
-        fab2: {
-            position: 'absolute',
-            margin: 16,
-            right: 0,
-            bottom: 70,
-            backgroundColor: '#3D2554',
-            zIndex: 15,
-        },
-        item: {
-            backgroundColor: '#3D2554',
-            padding: 20,
-            marginVertical: 8,
-            marginHorizontal: 16,
-            borderRadius: 5,
-        },
-        button: {
-            backgroundColor: '#3D2554',
-            padding: 10,
-            marginVertical: 8,
-            marginHorizontal: 16,
-            borderRadius: 2,
-            color: '#fff',
-            fontWeight: 'bold',
-            marginTop:30,
-        },
-         button2: {
-            backgroundColor: '#3D2554',
-            padding: 10,
-            marginVertical: 8,
-            marginHorizontal: 16,
-            borderRadius: 2,
-            color: '#fff',
-            fontWeight: 'bold',
-            marginTop:5,
-        },
-        title: {
-            fontSize: 18,
-            textAlign: 'left',
-            color: '#fff',
-        },
-        subtitle: {
-            fontSize: 12,
-            textAlign: 'left',
-            color: '#fff',
-        },
-    })
     //-----//
 
 
@@ -178,47 +68,14 @@ export default () => {
     }
     //-----//
 
-    //Função que atualiza o Array que está armazenando o JSON do Firebase
-    const updateBd = () => {
-        todasSalasReservadas = [];
-        tabelaSalas.on("child_added", snap => {
-            let f = snap.val();
-            console.log(f)
-            f.key = snap.key;
-            if (f.ocupado == 'sim') {
-                todasSalasReservadas.push(f);
-            } else {
-        
-            }
-            console.log(todasSalasReservadas);
-        });
-    }
-    //-----//
-
-    /**Esta função possibilita remover a reserva existente, atualizando os atributos "Ocupado","Data","horaInicio",
-     * "horaTermino", para poder realizar uma nova reserva utilizando a mesma sala */ 
-    const removerReserva = () => {
-        const db2 = firebase.database().ref();
-        const salaReservada = db2.child("Salas/" + selectedSalaKey);
-        salaReservada.update({
-            ocupado: "nao",
-            data:"...",
-            horaInicio:"...",
-            horaTermino: "...",
-        });
-        updateBd();
-        handleTimeLine();
-    }
-    //-----//
-
     return (
 
         <SafeAreaView>
             <View style={{ height: 580, marginTop: 25 }}>
                 <Card>
-                <View style={{height: 565}}>
-                    <ScrollView>
-                       
+                    <View style={{ height: 565 }}>
+
+
                         <View>
                             {(
                                 <FlatList
@@ -228,28 +85,28 @@ export default () => {
                                     keyExtractor={item => item.key}
                                 />)
                             }
-                       </View>
- 
-                    </ScrollView>
-                    <Provider>
+                        </View>
+
+
+                        <Provider>
                             <Portal>
                                 <Modal visible={visible1} onDismiss={hideModal1} contentContainerStyle={containerStyle}>
-                                    <Text style={{color:'#000',fontSize:20,fontWeight:'bold',}}>Opções</Text>
+                                    <Text style={{ color: '#000', fontSize: 20, fontWeight: 'bold', }}>Opções</Text>
                                     <Text>{selectedSalaNome}</Text>
-                                    
-                                    <Button style={styles.button}color={"#fff"} onPress={showModal2}>
+
+                                    <Button style={styles.button} color={"#fff"} onPress={showModal2}>
                                         Liberar reserva
       </Button>
                                 </Modal>
                                 <Modal visible={visible2} onDismiss={hideModal2} contentContainerStyle={containerStyle}>
-                                    <Text style={{color:'#000',fontSize:20,fontWeight:'bold',}}>{selectedSalaNome}</Text>
-                        <Text style={{color:'#000',fontSize:16,marginBottom:10}}>Você tem certeza que deseja liberar a reserva do{"(a)"} {selectedSalaNome}?</Text>
-                        <Button style={styles.button2} color={"#fff"} onPress={()=>{removerReserva()}}>Sim</Button>
-      <Button style={styles.button2}color={"#fff"}  onPress={hideModal2}>Não</Button>
+                                    <Text style={{ color: '#000', fontSize: 20, fontWeight: 'bold', }}>{selectedSalaNome}</Text>
+                                    <Text style={{ color: '#000', fontSize: 16, marginBottom: 10 }}>Você tem certeza que deseja liberar a reserva do{"(a)"} {selectedSalaNome}?</Text>
+                                    <Button style={styles.button2} color={"#fff"} onPress={() => { removerReserva(selectedSalaKey,handleTimeLine) }}>Sim</Button>
+                                    <Button style={styles.button2} color={"#fff"} onPress={hideModal2}>Não</Button>
                                 </Modal>
                             </Portal>
                         </Provider>
-                   </View>
+                    </View>
                 </Card>
             </View>
             <FAB
@@ -275,3 +132,64 @@ export default () => {
     )
 
 }
+
+export default Feed
+
+
+//Estilos do App
+const styles = StyleSheet.create({
+    fab: {
+        position: 'absolute',
+        margin: 16,
+        right: 0,
+        bottom: 10,
+        backgroundColor: '#3D2554',
+        zIndex: 15,
+    },
+    fab2: {
+        position: 'absolute',
+        margin: 16,
+        right: 0,
+        bottom: 70,
+        backgroundColor: '#3D2554',
+        zIndex: 15,
+    },
+    item: {
+        backgroundColor: '#3D2554',
+        padding: 20,
+        marginVertical: 8,
+        marginHorizontal: 16,
+        borderRadius: 5,
+    },
+    button: {
+        backgroundColor: '#3D2554',
+        padding: 10,
+        marginVertical: 8,
+        marginHorizontal: 16,
+        borderRadius: 2,
+        color: '#fff',
+        fontWeight: 'bold',
+        marginTop: 30,
+    },
+    button2: {
+        backgroundColor: '#3D2554',
+        padding: 10,
+        marginVertical: 8,
+        marginHorizontal: 16,
+        borderRadius: 2,
+        color: '#fff',
+        fontWeight: 'bold',
+        marginTop: 5,
+    },
+    title: {
+        fontSize: 18,
+        textAlign: 'left',
+        color: '#fff',
+    },
+    subtitle: {
+        fontSize: 12,
+        textAlign: 'left',
+        color: '#fff',
+    },
+})
+//-----//
