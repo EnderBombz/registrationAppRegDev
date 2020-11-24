@@ -16,35 +16,6 @@ if (!firebase.apps.length) {
 const db = firebase.database().ref();
 const tabelaSalas = db.child('Salas');
 
-var todasSalas = [];
-var todasSalasReservadas = [];
-
-tabelaSalas.on("child_added", snap => {
-    let f = snap.val();
-    console.log(f)
-    f.key = snap.key;
-    if (f.ocupado == 'nao') {
-        todasSalas.push(f);
-    } else {
-
-    }
-
-    console.log(todasSalas);
-});
-
-
-tabelaSalas.on("child_added", snap => {
-    let f = snap.val();
-    console.log(f)
-    f.key = snap.key;
-    if (f.ocupado == 'sim') {
-        todasSalasReservadas.push(f);
-    } else {
-
-    }
-
-    console.log(todasSalas);
-});
 
 
 
@@ -80,6 +51,39 @@ const styles = StyleSheet.create({
 });
 
 export default () => {
+
+
+    var todasSalas = [];
+    var todasSalasReservadas = [];
+
+    tabelaSalas.on("child_added", snap => {
+        let f = snap.val();
+        console.log(f)
+        f.key = snap.key;
+        if (f.ocupado == 'nao') {
+            todasSalas.push(f);
+        } else {
+
+        }
+
+        console.log(todasSalas);
+    });
+
+
+
+
+    tabelaSalas.on("child_added", snap => {
+        let f = snap.val();
+        console.log(f)
+        f.key = snap.key;
+        if (f.ocupado == 'sim') {
+            todasSalasReservadas.push(f);
+        } else {
+
+        }
+
+        console.log(todasSalas);
+    });
 
     //constante que vai pegar a sala e o nome que foi selecionado
     const [selectedSalaNome, setSelectedSalaNome] = useState('');
@@ -157,7 +161,7 @@ export default () => {
             let hora = selectedDate.getHours();
             let minutos = selectedDate.getMinutes() * 10;
             (minutos >= 59 ? minutos = minutos / 10 : minutos);
-            if(minutos == 0){
+            if (minutos == 0) {
                 minutos = "00";
             }
 
@@ -169,7 +173,7 @@ export default () => {
             let hora = selectedDate.getHours();
             let minutos = selectedDate.getMinutes() * 10;
             (minutos >= 59 ? minutos = minutos / 10 : minutos);
-            if(minutos == 0){
+            if (minutos == 0) {
                 minutos = "00";
             }
 
@@ -182,38 +186,51 @@ export default () => {
     const finalizarReserva = () => {
         if (dataReserva != '' && horaInicial != '' && horaTermino != '') {
 
-                console.log("--------reserva concluída-------")
-                console.log(selectedSalaKey);
-                console.log(selectedSalaNome);
-                console.log(dataReserva);
-                console.log(horaInicial);
-                console.log(horaTermino);
-                console.log("---------------------------------")
+            console.log("--------reserva concluída-------")
+            console.log(selectedSalaKey);
+            console.log(selectedSalaNome);
+            console.log(dataReserva);
+            console.log(horaInicial);
+            console.log(horaTermino);
+            console.log("---------------------------------")
 
-                const db2 = firebase.database().ref();
-                const salaReservada = db2.child("Salas/" + selectedSalaKey);
-                var teste = [];
-                console.log(salaReservada);
+            const db2 = firebase.database().ref();
+            const salaReservada = db2.child("Salas/" + selectedSalaKey);
+            var teste = "teste 24";
+            console.log(salaReservada);
 
-                salaReservada.update({
-                    ocupado: "sim",
-                    data: dataReserva,
-                    horaInicio: horaInicial,
-                    horaTermino: horaTermino,
-                });
+            salaReservada.update({
+                ocupado: "sim",
+                data: dataReserva,
+                horaInicio: horaInicial,
+                horaTermino: horaTermino,
+            });
 
 
-                salaReservada.on("child_changed", snap => {
-                    let f = snap.val();
-                    console.log(f)
-                    f.key = snap.key;
-                    teste.push(f);
-                    console.log(teste);
-                });
+            /*salaReservada.on("child_added", snap => {
+                let f = snap.val();
+                console.log(f)
+                f.key = snap.key;
+                teste.push(f);
+                console.log(teste);
+            });*/
+            todasSalas = [];
+            tabelaSalas.on("child_added", snap => {
+                let f = snap.val();
+                console.log(f)
+                f.key = snap.key;
+                if (f.ocupado == 'nao') {
+                    todasSalas.push(f);
+                } else {
 
-                handleTimeLine();
-                alert("Por favor, atualize a lista.")
-            
+                }
+
+                console.log(todasSalas);
+            });
+
+            handleTimeLine();
+            alert("Por favor, atualize a lista.")
+
         } else {
             alert("É necessário informar todos os valores.");
         }
@@ -265,8 +282,8 @@ export default () => {
                                 <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={containerStyle}>
                                     <View>
                                         <View>
-                                            <Text  style={{color:'#000',fontSize:20,fontWeight:'bold',marginBottom:15,}}>{selectedSalaNome}</Text>
-                                           
+                                            <Text style={{ color: '#000', fontSize: 20, fontWeight: 'bold', marginBottom: 15, }}>{selectedSalaNome}</Text>
+
                                         </View>
 
                                         <View>
@@ -286,7 +303,7 @@ export default () => {
                                             </TouchableOpacity>
                                         </View>
                                         <View>
-                                            <Text style={{fontSize:15,}}>O{"(A) "}{selectedSalaNome} foi reservado{"(a)"} para data {dataReserva} das {horaInicial} horas até {horaTermino} horas</Text>
+                                            <Text style={{ fontSize: 15, }}>O{"(A) "}{selectedSalaNome} foi reservado{"(a)"} para data {dataReserva} das {horaInicial} horas até {horaTermino} horas</Text>
                                         </View>
                                         <View>
                                             <TouchableOpacity onPress={() => { finalizarReserva() }} style={styles.button}>

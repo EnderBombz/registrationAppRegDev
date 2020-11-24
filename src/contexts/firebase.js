@@ -4,8 +4,7 @@ import config from '../components/Firebase';
 
 export const TodasSalasContext = React.createContext([]);
 
-
-export const SalasReservadasProvider = ({ children }) =>  {
+export const SalasReservadasProvider = ({ children }) => {
 
     useEffect(() => {
         if (!firebase.apps.length) {
@@ -16,10 +15,11 @@ export const SalasReservadasProvider = ({ children }) =>  {
             }
         }
         watchPersonData()
-    },[])
+    }, [])
 
     const [todasSalasReservadas, setTodasSalasReservadas] = useState([]);
-
+    const [todasSalasLivres, setTodasSalaLivres] = useState([]);
+    
     const db = firebase.database().ref();
     const tabelaSalas = db.child('Salas');
 
@@ -31,16 +31,29 @@ export const SalasReservadasProvider = ({ children }) =>  {
                 setTodasSalasReservadas(salas => [...salas, f])
             }
         })
-      }
-  
+    }
+
     const updateBd = () => {
+        setTodasSalasReservadas([]);
         tabelaSalas.on("child_added", snap => {
             let f = snap.val();
             f.key = snap.key;
             if (f.ocupado == 'sim') {
                 setTodasSalasReservadas(salas => [...salas, f])
             } else {
-        
+
+            }
+        });
+    }
+    const reservaLivre = () =>{
+        setTodasSalaLivres([]);
+        tabelaSalas.on("child_added", snap => {
+            let f = snap.val();
+            f.key = snap.key;
+            if (f.ocupado == 'nao') {
+                setTodasSalaLivres(salas => [...salas, f])
+            } else {
+
             }
         });
     }
@@ -57,10 +70,8 @@ export const SalasReservadasProvider = ({ children }) =>  {
         updateBd();
         handleTimeLine();
     }
-      return (
-        <TodasSalasContext.Provider value={{todasSalasReservadas,removerReserva,updateBd,watchPersonData }}>
-          {children}
-        </TodasSalasContext.Provider>
-      )
-  
+    return ( 
+        <TodasSalasContext.Provider value={{ todasSalasReservadas, removerReserva, updateBd, watchPersonData }}>{children}</TodasSalasContext.Provider>
+    )
+
 }

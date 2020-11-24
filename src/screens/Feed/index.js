@@ -57,14 +57,10 @@ const Feed = () => {
     const navigation = useNavigation()
 
     const handleReservationScreen = () => {
-        navigation.reset({
-            routes: [{ name: 'ReservationScreen' }]
-        })
+        navigation.navigate('ReservationScreen')  
     }
     const handleTimeLine = () => {
-        navigation.reset({
-            routes: [{ name: 'MainTab' }]
-        })
+        navigation.reset('MainTab')
     }
     //-----//
 
