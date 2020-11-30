@@ -15,10 +15,13 @@ export const SalasReservadasProvider = ({ children }) => {
             }
         }
         watchPersonData()
+        todasSalasSolicitadasUpdate()
     }, [])
 
     const [todasSalasReservadas, setTodasSalasReservadas] = useState([]);
+    const [todasSalasSolicitadas, setTodasSalasSolicitadas] = useState([]);
     const [todasSalasLivres, setTodasSalaLivres] = useState([]);
+    const [contas,setContas] = useState([]);
     
     const db = firebase.database().ref();
     const tabelaSalas = db.child('Salas');
@@ -29,6 +32,16 @@ export const SalasReservadasProvider = ({ children }) => {
             f.key = snap.key;
             if (f.ocupado === 'sim') {
                 setTodasSalasReservadas(salas => [...salas, f])
+            }
+        })
+    }
+    const todasSalasSolicitadasUpdate = () =>{
+        setTodasSalasSolicitadas([]);
+        tabelaSalas.on("child_added", snap => {
+            let f = snap.val();
+            f.key = snap.key;
+            if (f.ocupado === 'pendente') {
+                setTodasSalasSolicitadas(salas => [...salas, f])
             }
         })
     }
@@ -57,21 +70,61 @@ export const SalasReservadasProvider = ({ children }) => {
             }
         });
     }
-
-    const removerReserva = (selectedSalaKey, handleTimeLine) => {
+  
+    const removerReserva = (selectedSalaKey, handleTimeLine,hideModal1,hideModal2) => {
         const db2 = firebase.database().ref();
         const salaReservada = db2.child("Salas/" + selectedSalaKey);
         salaReservada.update({
             ocupado: "nao",
-            data: "...",
-            horaInicio: "...",
-            horaTermino: "...",
+            curso:"...",
+            data:"...",
+            disciplina:"...",
+            horaInicio:"...",
+            horaTermino:"...",
+            reservaDe:"..."
         });
         updateBd();
         handleTimeLine();
+        hideModal1();
+        hideModal2();
     }
+
+   
+
+    const permitirReserva = (selectedSalaKey, handleTimeLine,hideModal1,hideModal2) => {
+        const db2 = firebase.database().ref();
+        const salaReservada = db2.child("Salas/" + selectedSalaKey);
+        salaReservada.update({
+            ocupado: "sim",
+        });
+        todasSalasSolicitadasUpdate();
+        updateBd();
+        handleTimeLine();
+        hideModal1();
+        hideModal2();
+    }
+    const negarReserva = (selectedSalaKey, handleTimeLine,hideModal1,hideModal2) => {
+        const db2 = firebase.database().ref();
+        const salaReservada = db2.child("Salas/" + selectedSalaKey);
+        salaReservada.update({
+            ocupado: "nao",
+            curso:"...",
+            data:"...",
+            disciplina:"...",
+            horaInicio:"...",
+            horaTermino:"...",
+            reservaDe:"..."
+        });
+        todasSalasSolicitadasUpdate();
+        updateBd();
+        handleTimeLine();
+        hideModal1();
+        hideModal2();
+    }
+
+
     return ( 
-        <TodasSalasContext.Provider value={{ todasSalasReservadas, removerReserva, updateBd, watchPersonData }}>{children}</TodasSalasContext.Provider>
+        <TodasSalasContext.Provider value={{ todasSalasReservadas, removerReserva, updateBd, watchPersonData,db,todasSalasSolicitadasUpdate,todasSalasSolicitadas, permitirReserva,negarReserva }}>{children}</TodasSalasContext.Provider>
     )
 
 }

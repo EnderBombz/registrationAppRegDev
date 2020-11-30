@@ -1,13 +1,41 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useState,useEffect } from 'react'
 import { Text, View, SafeAreaView, StyleSheet, FlatList } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { FAB, Card, Modal, Portal, Button, Provider } from 'react-native-paper';
 import { TodasSalasContext } from '../../contexts/firebase'
 import CardItem from '../../components/CardItem'
+import { connect } from 'react-redux'
+import firebase from 'firebase'
+import config from '../../components/Firebase'
 
 
 
-const Feed = () => {
+const Feed = ({email}) => {
+
+    const dbf = firebase.database().ref();
+    const contasDb = dbf.child('Contas');
+    const [perfil, setPerfil] = useState([]);
+
+    useEffect(() => {
+        if (!firebase.apps.length) {
+            try {
+                firebase.initializeApp(config)
+            } catch (err) {
+                console.log(err)
+            }
+        }
+        watchPersonData()
+
+    }, [])
+    const watchPersonData = () => {
+        contasDb.on('child_added', snap => {
+            let f = snap.val();
+            f.key = snap.key;
+            if (f.email == email) {
+                setPerfil(f)
+            }
+        })
+    }
 
     const { todasSalasReservadas, removerReserva, updateBd } = useContext(TodasSalasContext)
 
@@ -40,9 +68,20 @@ const Feed = () => {
                 <CardItem
                     item={item}
                     onPress={() => {
-                        setSelectedSalaNome(item.nome);
+                        console.log(perfil.nome + "|" + item.reservaDe)
+                        if(perfil.nome == item.reservaDe){
+                             setSelectedSalaNome(item.nome);
                         setSelectedSalaKey(item.key);
                         showModal1();
+                        }else if(perfil.nome == 'Admin'){
+                            setSelectedSalaNome(item.nome);
+                            setSelectedSalaKey(item.key);
+                            showModal1();
+                        }else{
+                            console.log(perfil.nome)
+                            alert('Esta reserva não foi feita por você.')
+                        }
+                       
                     }}
                 />
             )
@@ -60,7 +99,7 @@ const Feed = () => {
         navigation.navigate('ReservationScreen')  
     }
     const handleTimeLine = () => {
-        navigation.reset('MainTab')
+        navigation.navigate('MainTab');
     }
     //-----//
 
@@ -97,7 +136,7 @@ const Feed = () => {
                                 <Modal visible={visible2} onDismiss={hideModal2} contentContainerStyle={containerStyle}>
                                     <Text style={{ color: '#000', fontSize: 20, fontWeight: 'bold', }}>{selectedSalaNome}</Text>
                                     <Text style={{ color: '#000', fontSize: 16, marginBottom: 10 }}>Você tem certeza que deseja liberar a reserva do{"(a)"} {selectedSalaNome}?</Text>
-                                    <Button style={styles.button2} color={"#fff"} onPress={() => { removerReserva(selectedSalaKey,handleTimeLine) }}>Sim</Button>
+                                    <Button style={styles.button2} color={"#fff"} onPress={() => { removerReserva(selectedSalaKey,handleTimeLine,hideModal1,hideModal2) }}>Sim</Button>
                                     <Button style={styles.button2} color={"#fff"} onPress={hideModal2}>Não</Button>
                                 </Modal>
                             </Portal>
@@ -129,7 +168,10 @@ const Feed = () => {
 
 }
 
-export default Feed
+export default connect(state => ({
+    email: state.user.email,
+    nome: state.user.nome,
+}))(Feed)
 
 
 //Estilos do App

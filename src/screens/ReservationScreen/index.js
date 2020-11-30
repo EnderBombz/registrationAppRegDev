@@ -1,10 +1,16 @@
-import React, { useState } from 'react'
+import React, { useState,useEffect,useContext } from 'react'
 import { Text, View, ScrollView, SafeAreaView, StyleSheet, FlatList, TouchableOpacity } from 'react-native'
 import { Avatar, Card, Title, Paragraph, Appbar, List, Modal, Portal, Button, Provider } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native'
 import DateTimePicker from '@react-native-community/datetimepicker';
 import config from '../../components/Firebase';
 import * as firebase from 'firebase';
+import { FontAwesome } from '@expo/vector-icons'
+import { TodasSalasContext } from '../../contexts/firebase'
+
+
+import { connect } from 'react-redux'
+
 
 if (!firebase.apps.length) {
     try {
@@ -50,8 +56,35 @@ const styles = StyleSheet.create({
     },
 });
 
-export default () => {
+const ReservationScreen = ({email}) => {
 
+    const {updateBd} = useContext(TodasSalasContext)
+
+    const dbf = firebase.database().ref();
+    const contasDb = dbf.child('Contas');
+    const [perfil, setPerfil] = useState([]);
+
+    useEffect(() => {
+        if (!firebase.apps.length) {
+            try {
+                firebase.initializeApp(config)
+            } catch (err) {
+                console.log(err)
+            }
+        }
+        watchPersonData()
+
+    }, [])
+    const watchPersonData = () => {
+        contasDb.on('child_added', snap => {
+            let f = snap.val();
+            f.key = snap.key;
+            if (f.email == email) {
+                console.log(email)
+                setPerfil(f)
+            }
+        })
+    }
 
     var todasSalas = [];
     var todasSalasReservadas = [];
@@ -93,7 +126,7 @@ export default () => {
     //TouchableOpacity do flatlist
     const [selectedId, setSelectedId] = useState(null);
     const navigation = useNavigation();
-    const LeftContent = props => <Avatar.Icon {...props} icon="folder" />
+    const LeftContent = props => <Avatar.Icon {...props} icon={() => <FontAwesome style={{ color: '#6200ee' }} name="user" size={24} color="black" />} />
     //----//
 
     //modal
@@ -200,10 +233,13 @@ export default () => {
             console.log(salaReservada);
 
             salaReservada.update({
-                ocupado: "sim",
+                curso: perfil.curso,
+                ocupado: "pendente",
                 data: dataReserva,
                 horaInicio: horaInicial,
                 horaTermino: horaTermino,
+                disciplina: perfil.disciplina,
+                reservaDe: perfil.nome,
             });
 
 
@@ -228,8 +264,9 @@ export default () => {
                 console.log(todasSalas);
             });
 
+            updateBd();
             handleTimeLine();
-            alert("Por favor, atualize a lista.")
+            alert("A Solicitação foi enviada para análise.")
 
         } else {
             alert("É necessário informar todos os valores.");
@@ -254,8 +291,6 @@ export default () => {
     return (
 
         <SafeAreaView>
-
-
             <Appbar.Header theme={{ colors: { primary: '#3D2554', underlineColor: '#3D2554' } }}>
                 <Appbar.BackAction onPress={() => handleTimeLine()} />
                 <Appbar.Content title="Reserva" subtitle="de salas" />
@@ -266,13 +301,13 @@ export default () => {
                         <View>
 
                             <Card>
-                                <Card.Title title="José Augusto" subtitle="Professor" left={LeftContent} />
+                                <Card.Title title={perfil.nome} subtitle={perfil.ocupacao} left={() => <Avatar.Icon style={{ backgroundColor: '#6200ee' }} size={40} icon={() => <FontAwesome style={{ color: '#fff' }} name="user" size={20} color="black" />}></Avatar.Icon>} />
                                 <Card.Content>
-                                    <Title>José Augusto</Title>
+                                    <Title>{perfil.nome}</Title>
 
-                                    <Text style={{ flex: 1, flexDirection: 'row', textAlign: 'left' }}>Período: Matutino</Text>
-                                    <Text style={{ flex: 1, flexDirection: 'row', textAlign: 'left' }}>Curso: Análise e desenvolvimento de sistemas</Text>
-                                    <Text style={{ flex: 1, flexDirection: 'row', textAlign: 'left' }}>Disciplina: Algorítimo</Text>
+                                    <Text style={{ flex: 1, flexDirection: 'row', textAlign: 'left' }}>Período: {perfil.turno}</Text>
+                                    <Text style={{ flex: 1, flexDirection: 'row', textAlign: 'left' }}>Curso: {perfil.curso}</Text>
+                                    <Text style={{ flex: 1, flexDirection: 'row', textAlign: 'left' }}>Disciplina: {perfil.disciplina}</Text>
 
                                 </Card.Content>
 
@@ -349,3 +384,7 @@ export default () => {
     )
 
 }
+export default connect(state => ({
+    email: state.user.email,
+    nome: state.user.nome,
+}))(ReservationScreen)

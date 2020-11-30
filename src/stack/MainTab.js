@@ -5,10 +5,15 @@ import { AntDesign } from '@expo/vector-icons';
 
 import Feed from './../screens/Feed'
 import User from './../screens/User'
+import Solicitacoes from './../screens/Requests'
+
+import { connect } from 'react-redux'
+
 
 const Tab = createMaterialBottomTabNavigator()
 
-export default () => {
+const MainTab = ({email}) => {
+
     return (
 
         <Tab.Navigator initialRouteName="Compras"
@@ -20,21 +25,37 @@ export default () => {
                 ({ route }) => ({
                     tabBarIcon: ({ focused, color, size }) => {
                         let iconName;
+                        console.log(email)
+                        if (email != 'admin') {
+                            if (route.name === 'Feed') {
+                                iconName = focused ? 'bars' : 'bars';
+                            } else if (route.name === 'User') {
+                                iconName = focused ? 'user' : 'user';
+                            }
+                        } else {
+                            if (route.name === "Solicitacoes") {
+                                iconName = focused ? 'eye' : 'eye';
+                            } else if (route.name === 'User') {
+                                iconName = focused ? 'user' : 'user';
+                            }else if(route.name === 'Feed'){
+                                iconName = focused ? 'bars' : 'bars';
+                            }
+                        }
 
-                        if (route.name === 'Feed') {
-                            iconName = focused ? 'bars' : 'bars';
-                        } else if (route.name === 'User') {
-                            iconName = focused ? 'user' : 'user';
-                        } 
-                      
-                        return <AntDesign name={iconName}size={24}color={color}/>;
+
+                        return <AntDesign name={iconName} size={24} color={color} />;
                     },
                 })
             }>
-            <Tab.Screen name="Feed" component={Feed}/> 
-            <Tab.Screen name="User"component={User}/>
-            
+            <Tab.Screen name="Feed" component={Feed} />
+            {email == 'admin'? <Tab.Screen name="Solicitacoes" component={Solicitacoes}/>:null}
+            <Tab.Screen name="User" component={User} />
+
         </Tab.Navigator>
 
     );
 }
+export default connect(state => ({
+    email: state.user.email,
+    nome: state.user.nome,
+}))(MainTab)

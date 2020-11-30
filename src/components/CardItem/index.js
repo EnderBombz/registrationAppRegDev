@@ -1,6 +1,7 @@
 import React from 'react'
 import { Text, View, TouchableOpacity } from 'react-native'
 import { Card, Avatar, Title } from 'react-native-paper';
+import {FontAwesome} from '@expo/vector-icons'
 
 
 const CardItem = ({ item, onPress }) => {
@@ -12,7 +13,7 @@ const CardItem = ({ item, onPress }) => {
             <TouchableOpacity onPress={onPress} >
 
                 <Card style={{ margin: 10, borderRadius: 5, padding: 10, }}>
-                    <Card.Title title={item.reservaDe} subtitle={item.cargo} left={LeftContent} />
+                    <Card.Title title={item.reservaDe} subtitle={item.ocupacao} left={() => <Avatar.Icon style={{backgroundColor:'#6200ee'}}size={40} icon={()=><FontAwesome style={{ color: '#fff'}} name="user" size={20} color="black" />}></Avatar.Icon>} />
                     <Card.Content>
                         <View>
                             <Title>{item.nome}</Title>
